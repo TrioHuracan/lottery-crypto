@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลอตเตอร์รี่เลข 2 หลัก</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 3em;
+            font-weight: 700;
+            text-shadow: none;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #4a5568;
+            font-size: 1.1em;
+        }
+
+        .wallet-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .connect-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .account-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .account-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .account-address {
+            background: #5a67d8;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            box-shadow: 0 4px 15px rgba(90, 103, 216, 0.3);
+        }
+
+        .network-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .network-badge.success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .network-badge.error {
+            background: #f56565;
+            color: white;
+        }
+
+        button {
+            background: #5a67d8;
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(90, 103, 216, 0.4);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(90, 103, 216, 0.6);
+            background: #4c51bf;
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        button.disconnect-btn {
+            background: #f56565;
+            box-shadow: 0 4px 15px rgba(245, 101, 101, 0.4);
+        }
+
+        button.disconnect-btn:hover:not(:disabled) {
+            box-shadow: 0 6px 20px rgba(245, 101, 101, 0.6);
+            background: #e53e3e;
+        }
+
+        .lottery-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease 0.2s backwards;
+        }
+
+        .lottery-section h2 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .lottery-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: #ed64a6;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(237, 100, 166, 0.3);
+        }
+
+        .info-card h4 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .info-card .value {
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .number-input-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .number-input-container label {
+            display: block;
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"] {
+            width: 150px;
+            height: 80px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+            color: #667eea;
+        }
+
+        input[type="number"]:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-to-cart-btn {
+            padding: 20px 40px;
+            font-size: 1.2em;
+            background: #48bb78;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .add-to-cart-btn:hover:not(:disabled) {
+            background: #38a169;
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.6);
+        }
+
+        /* Cart Styles */
+        .cart-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.8s ease 0.3s backwards;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .cart-header h2 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .cart-badge {
+            background: #ed64a6;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .cart-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .cart-item-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            font-size: 0.9em;
+            color: #718096;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #f56565;
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            font-size: 0.8em;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+        }
+
+        .remove-btn:hover {
+            background: #e53e3e;
+            transform: scale(1.1);
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+            font-size: 1.1em;
+        }
+
+        .cart-summary {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .summary-row.total {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+            padding-top: 15px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .cart-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .cart-actions button {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .clear-cart-btn {
+            background: #718096;
+            box-shadow: 0 4px 15px rgba(113, 128, 150, 0.4);
+        }
+
+        .clear-cart-btn:hover:not(:disabled) {
+            background: #4a5568;
+            box-shadow: 0 6px 20px rgba(113, 128, 150, 0.6);
+        }
+
+        .checkout-btn {
+            background: #ed64a6;
+            box-shadow: 0 4px 15px rgba(237, 100, 166, 0.4);
+        }
+
+        .checkout-btn:hover:not(:disabled) {
+            background: #d53f8c;
+            box-shadow: 0 6px 20px rgba(237, 100, 166, 0.6);
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            animation: fadeInUp 0.8s ease 0.4s backwards;
+        }
+
+        .balance-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .balance-card h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .balance-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .balance-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .wallet-address {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75em;
+            word-break: break-all;
+            margin-top: 15px;
+            color: #666;
+        }
+
+        .message {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .message.error {
+            background: #f56565;
+            color: white;
+        }
+
+        .message.info {
+            background: #4299e1;
+            color: white;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .lottery-section, .cart-section {
+                padding: 20px;
+            }
+
+            input[type="number"] {
+                width: 120px;
+                height: 70px;
+                font-size: 2em;
+            }
+
+            .cart-actions {
+                flex-direction: column;
+            }
+
+            .cart-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎰 ลอตเตอร์รี่เลข 2 หลัก</h1>
+        <p>โอกาสทองในการชนะรางวัลใหญ่!</p>
+    </div>
+
+    <div class="wallet-section">
+        <div class="connect-container">
+            <div class="account-info">
+                <h3>สถานะการเชื่อมต่อ</h3>
+                <div id="account" class="account-address">กรุณาเชื่อมต่อกระเป๋า</div>
+                <div id="network-status"></div>
+            </div>
+            <div>
+                <button id="connectBtn">🔗 เชื่อมต่อ MetaMask</button>
+                <button id="disconnectBtn" class="disconnect-btn" style="display: none;">🔌 ยกเลิกการเชื่อมต่อ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="lottery-section">
+        <h2>🎫 เลือกเลขลอตเตอรี่</h2>
+
+        <div class="lottery-info">
+            <div class="info-card">
+                <h4>ราคาต่อเลข</h4>
+                <div class="value">500 LTH</div>
+            </div>
+            <div class="info-card">
+                <h4>รางวัลที่ได้รับ</h4>
+                <div class="value">20,000 LTH</div>
+            </div>
+        </div>
+
+        <div class="number-input-container">
+            <label for="lotteryNumber">🎯 เลือกเลขมงคลของคุณ (00-99)</label>
+            <div class="input-group">
+                <input type="number" id="lotteryNumber" min="0" max="99" placeholder="00">
+                <button id="addToCartBtn" class="add-to-cart-btn" disabled>➕ เพิ่มลงตะกร้า</button>
+            </div>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <!-- Cart Section -->
+    <div class="cart-section">
+        <div class="cart-header">
+            <h2>🛒 ตะกร้าลอตเตอรี่</h2>
+            <span class="cart-badge"><span id="cartCount">0</span> ใบ</span>
+        </div>
+
+        <div id="cartItems" class="cart-items">
+            <div class="cart-empty">ยังไม่มีเลขในตะกร้า<br>เลือกเลขที่ต้องการแล้วกดเพิ่มลงตะกร้า</div>
+        </div>
+
+        <div id="cartSummary" style="display: none;">
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>จำนวนลอตเตอรี่:</span>
+                    <span id="summaryCount">0 ใบ</span>
+                </div>
+                <div class="summary-row">
+                    <span>ราคาต่อใบ:</span>
+                    <span>500 LTH</span>
+                </div>
+                <div class="summary-row total">
+                    <span>รวมทั้งหมด:</span>
+                    <span id="summaryTotal">0 LTH</span>
+                </div>
+            </div>
+
+            <div class="cart-actions">
+                <button id="clearCartBtn" class="clear-cart-btn">🗑️ ล้างตะกร้า</button>
+                <button id="checkoutBtn" class="checkout-btn" disabled>💳 ชำระเงิน</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="balance-grid">
+        <div class="balance-card">
+            <h3>💰 ยอดคงเหลือของคุณ</h3>
+            <div class="balance-value" id="lth-balance">-</div>
+            <div class="balance-label">LTH Token</div>
+        </div>
+
+        <div class="balance-card">
+            <h3>🏦 กระเป๋ากลาง Lottery</h3>
+            <div class="balance-value" id="central-lth-balance">-</div>
+            <div class="balance-label">LTH Token</div>
+            <div class="wallet-address">0x3742F57585eBA2c35A402fA41B8f64f8829D7D3b</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const accountDiv = document.getElementById("account");
+    const networkStatusDiv = document.getElementById("network-status");
+    const lthBalanceDiv = document.getElementById("lth-balance");
+    const centralLthBalanceDiv = document.getElementById("central-lth-balance");
+    const lotteryNumberInput = document.getElementById("lotteryNumber");
+    const addToCartBtn = document.getElementById("addToCartBtn");
+    const messageDiv = document.getElementById("message");
+
+    // Cart elements
+    const cartItemsDiv = document.getElementById("cartItems");
+    const cartCountSpan = document.getElementById("cartCount");
+    const cartSummaryDiv = document.getElementById("cartSummary");
+    const summaryCountSpan = document.getElementById("summaryCount");
+    const summaryTotalSpan = document.getElementById("summaryTotal");
+    const clearCartBtn = document.getElementById("clearCartBtn");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+
+    const LOTTERY_WALLET_ADDRESS = "0x3742F57585eBA2c35A402fA41B8f64f8829D7D3b";
+    const LTH_TOKEN = { name: "LTH", address: "0x6b5157e30529F100A8Cadbc77A47Ad76c5b72a49" };
+    const LTH_PRICE = "500";
+
+    const ERC20_ABI = [
+        "function symbol() view returns (string)",
+        "function decimals() view returns (uint8)",
+        "function balanceOf(address owner) view returns (uint256)",
+        "function transfer(address to, uint256 amount) returns (bool)"
+    ];
+
+    let provider, signer, userAddress, lthContract, lthDecimals;
+    let cart = [];
+
+    function showMessage(text, type = 'info') {
+        messageDiv.innerHTML = text;
+        messageDiv.className = `message ${type}`;
+    }
+
+    function updateCart() {
+        cartCountSpan.textContent = cart.length;
+
+        if (cart.length === 0) {
+            cartItemsDiv.innerHTML = '<div class="cart-empty">ยังไม่มีเลขในตะกร้า<br>เลือกเลขที่ต้องการแล้วกดเพิ่มลงตะกร้า</div>';
+            cartSummaryDiv.style.display = 'none';
+            checkoutBtn.disabled = true;
+        } else {
+            // นับจำนวนแต่ละเลข
+            const numberCount = {};
+            cart.forEach(num => {
+                numberCount[num] = (numberCount[num] || 0) + 1;
+            });
+
+            // แสดงเลขที่ไม่ซ้ำพร้อมจำนวน
+            cartItemsDiv.innerHTML = Object.entries(numberCount)
+                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                .map(([num, count]) => `
+                        <div class="cart-item">
+                            <button class="remove-btn" onclick="removeFromCart(${num})">×</button>
+                            <div class="cart-item-number">${String(num).padStart(2, '0')}</div>
+                            <div class="cart-item-price">${count > 1 ? count + ' ใบ × ' : ''}500 LTH</div>
+                        </div>
+                    `).join('');
+
+            cartSummaryDiv.style.display = 'block';
+            summaryCountSpan.textContent = `${cart.length} ใบ`;
+            summaryTotalSpan.textContent = `${(cart.length * 500).toLocaleString()} LTH`;
+            checkoutBtn.disabled = !userAddress;
+        }
+    }
+
+    function addToCart() {
+        const number = parseInt(lotteryNumberInput.value);
+
+        if (isNaN(number) || number < 0 || number > 99) {
+            showMessage("กรุณากรอกเลข 2 หลัก (00-99) ให้ถูกต้อง", "error");
+            return;
+        }
+
+        cart.push(number);
+        updateCart();
+        lotteryNumberInput.value = "";
+
+        const count = cart.filter(n => n === number).length;
+        showMessage(`✅ เพิ่มเลข ${String(number).padStart(2, '0')} ลงตะกร้าแล้ว (ซื้อไป ${count} ใบ)`, "success");
+
+        setTimeout(() => {
+            messageDiv.innerHTML = "";
+            messageDiv.className = "";
+        }, 2000);
+    }
+
+    function removeFromCart(number) {
+        const index = cart.indexOf(number);
+        if (index > -1) {
+            cart.splice(index, 1);
+        }
+        updateCart();
+
+        const remaining = cart.filter(n => n === number).length;
+        if (remaining > 0) {
+            showMessage(`ลบเลข ${String(number).padStart(2, '0')} 1 ใบ (เหลือ ${remaining} ใบ)`, "info");
+        } else {
+            showMessage(`ลบเลข ${String(number).padStart(2, '0')} ออกจากตะกร้าแล้ว`, "info");
+        }
+
+        setTimeout(() => {
+            messageDiv.innerHTML = "";
+            messageDiv.className = "";
+        }, 2000);
+    }
+
+    function clearCart() {
+        if (cart.length === 0) return;
+
+        if (confirm(`ต้องการล้างลอตเตอรี่ทั้งหมด ${cart.length} ใบ ออกจากตะกร้าใช่หรือไม่?`)) {
+            cart = [];
+            updateCart();
+            showMessage("🗑️ ล้างตะกร้าเรียบร้อย", "info");
+        }
+    }
+
+    async function checkout() {
+        if (!lthContract || !userAddress || cart.length === 0) {
+            showMessage("กรุณาเชื่อมต่อ MetaMask และเลือกเลขก่อน", "error");
+            return;
+        }
+
+        const totalAmount = cart.length * 500;
+        const amountInWei = ethers.utils.parseUnits(totalAmount.toString(), lthDecimals);
+
+        showMessage(`🔄 กำลังชำระเงิน ${totalAmount.toLocaleString()} LTH สำหรับ ${cart.length} เลข... โปรดยืนยันใน MetaMask`, "info");
+        checkoutBtn.disabled = true;
+
+        try {
+            const tx = await lthContract.transfer(LOTTERY_WALLET_ADDRESS, amountInWei);
+            showMessage(`⏳ ส่งธุรกรรมสำเร็จ! กำลังรอการยืนยัน...`, "info");
+            await tx.wait();
+
+            // นับจำนวนแต่ละเลข
+            const numberCount = {};
+            cart.forEach(num => {
+                numberCount[num] = (numberCount[num] || 0) + 1;
+            });
+
+            const purchasedNumbers = Object.entries(numberCount)
+                .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+                .map(([num, count]) => `${String(num).padStart(2, '0')}${count > 1 ? ' (×' + count + ')' : ''}`)
+                .join(', ');
+
+            showMessage(`🎉 ซื้อลอตเตอรี่สำเร็จ!<br>เลขที่ซื้อ: ${purchasedNumbers}<br>จำนวนเงิน: ${totalAmount.toLocaleString()} LTH`, "success");
+
+            cart = [];
+            updateCart();
+            await loadLTHBalance();
+        } catch (error) {
+            console.error("Checkout error:", error);
+            const errorMessage = error.reason || error.message || "Unknown error";
+            showMessage(`❌ การทำธุรกรรมล้มเหลว: ${errorMessage}`, "error");
+        } finally {
+            checkoutBtn.disabled = false;
+        }
+    }
+
+    function disconnectWallet() {
+        provider = null;
+        signer = null;
+        userAddress = null;
+        lthContract = null;
+
+        accountDiv.innerText = "กรุณาเชื่อมต่อกระเป๋า";
+        networkStatusDiv.innerHTML = "";
+        lthBalanceDiv.textContent = "-";
+        centralLthBalanceDiv.textContent = "-";
+        messageDiv.innerHTML = "";
+        messageDiv.className = "";
+
+        connectBtn.style.display = "block";
+        disconnectBtn.style.display = "none";
+        addToCartBtn.disabled = true;
+        checkoutBtn.disabled = true;
+    }
+
+    connectBtn.onclick = async () => {
+        if (typeof window.ethereum !== "undefined") {
+            try {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                accountDiv.innerText = userAddress;
+                addToCartBtn.disabled = true;
+
+                const network = await provider.getNetwork();
+                if (network.chainId !== 97) {
+                    networkStatusDiv.innerHTML = '<span class="network-badge error">⚠️ กรุณาเปลี่ยนไปที่ BNB Testnet</span>';
+                    disconnectBtn.style.display = "block";
+                    connectBtn.style.display = "none";
+                    return;
+                } else {
+                    networkStatusDiv.innerHTML = '<span class="network-badge success">✅ BNB Testnet</span>';
+                }
+
+                lthContract = new ethers.Contract(LTH_TOKEN.address, ERC20_ABI, signer);
+                lthDecimals = await lthContract.decimals();
+                addToCartBtn.disabled = false;
+                if (cart.length > 0) {
+                    checkoutBtn.disabled = false;
+                }
+
+                connectBtn.style.display = "none";
+                disconnectBtn.style.display = "block";
+
+                await loadLTHBalance();
+                setupListeners();
+                showMessage("✅ เชื่อมต่อสำเร็จ!", "success");
+            } catch (err) {
+                console.error("Connection error:", err);
+                showMessage("❌ ไม่สามารถเชื่อมต่อกระเป๋าได้", "error");
+                disconnectWallet();
+            }
+        } else {
+            alert("กรุณาติดตั้ง MetaMask!");
+        }
+    };
+
+    disconnectBtn.onclick = disconnectWallet;
+
+    function setupListeners() {
+        if (typeof window.ethereum !== "undefined") {
+            window.ethereum.on('accountsChanged', handleAccountsChanged);
+            window.ethereum.on('chainChanged', handleChainChanged);
+        }
+    }
+
+    async function handleAccountsChanged(accounts) {
+        if (accounts.length === 0) {
+            disconnectWallet();
+            showMessage("การเชื่อมต่อถูกยกเลิก", "error");
+        } else if (accounts[0] !== userAddress) {
+            userAddress = accounts[0];
+            accountDiv.innerText = userAddress;
+            showMessage(`✅ เปลี่ยนเป็นบัญชี: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`, "success");
+
+            signer = provider.getSigner();
+            lthContract = new ethers.Contract(LTH_TOKEN.address, ERC20_ABI, signer);
+
+            await loadLTHBalance();
+        }
+    }
+
+    function handleChainChanged(chainId) {
+        window.location.reload();
+    }
+
+    async function loadLTHBalance() {
+        if (!lthContract || !userAddress) return;
+        try {
+            const lthProviderContract = new ethers.Contract(LTH_TOKEN.address, ERC20_ABI, provider);
+
+            const userBalance = await lthProviderContract.balanceOf(userAddress);
+            const adjustedUserBalance = ethers.utils.formatUnits(userBalance, lthDecimals);
+            lthBalanceDiv.textContent = parseFloat(adjustedUserBalance).toLocaleString('th-TH', {maximumFractionDigits: 2});
+
+            const centralBalance = await lthProviderContract.balanceOf(LOTTERY_WALLET_ADDRESS);
+            const adjustedCentralBalance = ethers.utils.formatUnits(centralBalance, lthDecimals);
+            centralLthBalanceDiv.textContent = parseFloat(adjustedCentralBalance).toLocaleString('th-TH', {maximumFractionDigits: 2});
+
+        } catch (error) {
+            console.error("Error loading LTH balance:", error);
+            lthBalanceDiv.textContent = "Error";
+            centralLthBalanceDiv.textContent = "Error";
+        }
+    }
+
+    // Event Listeners
+    addToCartBtn.onclick = addToCart;
+    clearCartBtn.onclick = clearCart;
+    checkoutBtn.onclick = checkout;
+
+    lotteryNumberInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addToCart();
+        }
+    });
+
+    // Initialize
+    updateCart();
+</script>
+</body>
+</html>
